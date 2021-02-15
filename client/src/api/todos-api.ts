@@ -3,6 +3,7 @@ import { Todo } from '../types/Todo';
 import { CreateTodoRequest } from '../types/CreateTodoRequest';
 import Axios from 'axios'
 import { UpdateTodoRequest } from '../types/UpdateTodoRequest';
+import { PresignedUrl } from '../types/PresignedUrl';
 
 export async function getTodos(idToken: string): Promise<Todo[]> {
   console.log('Fetching todos')
@@ -15,6 +16,21 @@ export async function getTodos(idToken: string): Promise<Todo[]> {
   })
   console.log('Todos:', response.data)
   return response.data.items
+}
+
+export async function getTodo(
+  idToken: string,
+  todoId: string): Promise<Todo> {
+  console.log('Fetching todo')
+
+  const response = await Axios.get(`${apiEndpoint}/todos/${todoId}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    },
+  })
+  console.log('Todo:', response.data)
+  return response.data.item
 }
 
 export async function createTodo(
@@ -58,14 +74,14 @@ export async function deleteTodo(
 export async function getUploadUrl(
   idToken: string,
   todoId: string
-): Promise<string> {
+): Promise<PresignedUrl> {
   const response = await Axios.post(`${apiEndpoint}/todos/${todoId}/attachment`, '', {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     }
   })
-  return response.data.uploadUrl
+  return response.data
 }
 
 export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void> {

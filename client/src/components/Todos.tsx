@@ -74,18 +74,21 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   onTodoCheck = async (pos: number) => {
     try {
       const todo = this.state.todos[pos]
+
+      const updatedTodo = {...todo};
+      updatedTodo.done = !todo.done;
+
       await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
-        name: todo.name,
-        dueDate: todo.dueDate,
-        done: !todo.done
+        ...updatedTodo
       })
+      console.log(pos);
       this.setState({
         todos: update(this.state.todos, {
           [pos]: { done: { $set: !todo.done } }
         })
       })
     } catch {
-      alert('Todo deletion failed')
+      alert('Todo done failed')
     }
   }
 

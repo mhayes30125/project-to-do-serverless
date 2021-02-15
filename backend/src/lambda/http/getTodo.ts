@@ -3,33 +3,36 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyHandler } f
 import * as AWS  from 'aws-sdk';
 const docClient = new AWS.DynamoDB.DocumentClient();
 const todosTable = process.env.TODOS_TABLE;
-const userIdIndex = process.env.USER_ID_INDEX;
 import { createLogger } from '../../utils/logger'
 
-const logger = createLogger('getTodos')
+const logger = createLogger('getTodo')
 import { getUserId } from '../auth/utilities';
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   
   try{
+    const todoId = event.pathParameters.todoId
+
     const authorization = event.headers.Authorization;
     const split = authorization.split(' ');
     const jwtToken = split[1];
   
     const userId = getUserId(jwtToken);
   
+    logger.info(`Get Todo ${todoId}, ${userId}`);
+
     const result = await docClient.query({
       TableName : todosTable,
-      IndexName : userIdIndex,
-      KeyConditionExpression: 'userId = :userId',
+      KeyConditionExpression: 'userId = :userId and todoId = :todoId',
       ExpressionAttributeValues: {
-          ':userId': userId
+          ':userId': userId,
+          ':todoId' : todoId
       }
   }).promise()
   
-    const items = result.Items
+    const item = result.Items[0]
   
-    logger.info('GetTodos',items);
+    logger.info('Get Todo',{item});
   
     return {
       statusCode: 200,
@@ -37,7 +40,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        items
+        item
       })
     }
   }
@@ -45,7 +48,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   {
     logger.error('Get Todo caused error.', {error: e});
   }
-
+  
   return {
     statusCode: 500,
     headers: {
