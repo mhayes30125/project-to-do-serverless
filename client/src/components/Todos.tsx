@@ -17,7 +17,7 @@ import {
 import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
-
+import { UpdateTodoRequest } from '../types/UpdateTodoRequest'
 interface TodosProps {
   auth: Auth
   history: History
@@ -75,7 +75,7 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     try {
       const todo = this.state.todos[pos]
 
-      const updatedTodo = {...todo};
+      const updatedTodo = {...todo as UpdateTodoRequest};
       updatedTodo.done = !todo.done;
 
       await patchTodo(this.props.auth.getIdToken(), todo.todoId, {

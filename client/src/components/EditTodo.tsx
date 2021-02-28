@@ -57,12 +57,13 @@ export class EditTodo extends React.PureComponent<
       await uploadFile(presignedUrl.uploadUrl, this.state.file)
       
       const currentTodo = await getTodo(this.props.auth.getIdToken(), this.props.match.params.todoId);
-      console.log('here it is');
-      console.log(currentTodo);
       currentTodo.attachmentUrl = presignedUrl.retrievalUrl;
       
       await patchTodo(this.props.auth.getIdToken(), this.props.match.params.todoId, {
-        ...currentTodo
+        name: currentTodo.name,
+        dueDate: currentTodo.dueDate,
+        done: currentTodo.done,
+        attachmentUrl: currentTodo.attachmentUrl
       })
 
       alert('File was uploaded!')

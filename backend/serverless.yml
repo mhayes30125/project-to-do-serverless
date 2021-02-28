@@ -23,6 +23,21 @@ provider:
    TODO_S3_BUCKET: microlearning-todo-${self:provider.stage}
    SIGNED_URL_EXPIRATION: 300
 
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: Todo Api
+        description: Serverless application for creating and updating todo items
+    models:
+      - name: TodoCreateRequest
+        contentType: application/json
+        schema: ${file(src/schemaModels/create-todo-model.json)}
+      - name: TodoUpdateRequest
+        contentType: application/json
+        schema: ${file(src/schemaModels/update-todo-model.json)}
+
 functions:
 
   Auth:
@@ -70,6 +85,10 @@ functions:
           method: post
           path: todos
           cors: true
+          reqValidatorName: RequestBodyValidator
+          request:
+            schema: 
+             application/json: ${file(src/schemaModels/create-todo-model.json)}
     iamRoleStatementsName: create-todo-role-name
     iamRoleStatements:
       - Effect: Allow
@@ -84,6 +103,10 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
+          reqValidatorName: RequestBodyValidator
+          request:
+            schema: 
+             application/json: ${file(src/schemaModels/update-todo-model.json)}
     iamRoleStatementsName: update-todo-role-name
     iamRoleStatements:
       - Effect: Allow
@@ -123,6 +146,15 @@ functions:
 
 resources:
   Resources:
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:
